@@ -31,18 +31,21 @@ h1{font-family:"Major Mono Display",ui-monospace,monospace;color:var(--lime);fon
 @media(min-width:820px){.grid{grid-template-columns:1.1fr 1fr}}
 .map{border:1px solid var(--lime-dim);padding:6px;position:relative}
 svg{width:100%;height:auto;display:block}
-.zone circle{fill:#000;stroke:var(--lime);stroke-width:1.5;cursor:pointer;transition:fill .15s}
-.zone text{fill:var(--lime);font-family:"Major Mono Display",monospace;font-size:26px;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.zone circle{fill:#000;stroke:var(--lime);stroke-width:4;cursor:pointer;transition:fill .15s}
+.zone text{fill:var(--lime);font-family:"Major Mono Display",monospace;font-size:36px;text-anchor:middle;dominant-baseline:central;pointer-events:none}
 .zone.sel circle{fill:var(--lime)}
 .zone.sel text{fill:#000}
-.zone.hl circle{stroke-width:4}
 .zone:focus{outline:none}
-.zone:focus-visible circle{stroke-width:5}
-.syz{stroke:var(--lime);stroke-width:3}
-.cur{stroke:var(--lime);stroke-width:1.5;stroke-dasharray:6 5;fill:none}
-.gate{stroke:var(--lime-dim);stroke-width:1;fill:none}
-.demonline{stroke:#fff;stroke-width:2.5;fill:none}
-.rlabel{fill:var(--muted);font-size:11px;letter-spacing:.08em;font-family:"Chakra Petch",sans-serif}
+.zone:focus-visible circle{stroke-width:8}
+.syz{stroke:var(--lime);stroke-width:12}
+.cur{stroke:var(--lime);stroke-width:14;stroke-linecap:round;fill:none}
+.cur.warp{stroke-width:10}
+.gate{stroke:var(--lime);stroke-width:2.5;fill:none}
+.gate.dash{stroke-dasharray:9 7}
+.glabel circle{fill:#000;stroke:var(--lime);stroke-width:2}
+.glabel text{fill:var(--lime);font-family:"Chakra Petch",sans-serif;font-size:19px;text-anchor:middle;dominant-baseline:central}
+.demonline{stroke:#fff;stroke-width:6;fill:none;stroke-linecap:round}
+.map{max-width:520px;margin:0 auto}
 .toggles{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:.9rem;color:var(--muted)}
 .toggles label{display:flex;gap:6px;align-items:center;cursor:pointer}
 input[type=checkbox]{accent-color:var(--lime)}
@@ -85,7 +88,7 @@ table.matrix{border-collapse:collapse;font-size:.8rem}
 
   <div class="grid">
     <div>
-      <div class="map"><svg id="map" viewBox="0 0 360 520" role="img" aria-label="Numogram diagram"></svg></div>
+      <div class="map"><svg id="map" viewBox="330 70 590 1095" role="img" aria-label="Numogram diagram"></svg></div>
       <div class="toggles">
         <label><input type="checkbox" id="tCur" checked> Currents</label>
         <label><input type="checkbox" id="tGate" checked> Gates</label>
@@ -129,8 +132,8 @@ table.matrix{border-collapse:collapse;font-size:.8rem}
 <script>
 (function(){
   const NS="http://www.w3.org/2000/svg";
-  const POS={3:[130,80],6:[230,80],8:[70,200],1:[70,320],7:[180,200],2:[180,320],5:[290,200],4:[290,320],9:[130,450],0:[230,450]};
-  const R=24;
+  const POS={3:[533,233],6:[672,233],2:[785,393],5:[455,460],7:[850,483],4:[382,548],1:[605,738],8:[605,843],9:[605,995],0:[605,1105]};
+  const R=40;
 
   const dr=n=>n===0?0:1+((n-1)%9);
   const tri=n=>n*(n+1)/2;
@@ -153,48 +156,48 @@ table.matrix{border-collapse:collapse;font-size:.8rem}
   const svg=document.getElementById("map");
   const el=(tag,attrs,parent)=>{const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);(parent||svg).appendChild(e);return e;};
 
-  // marker
+  // markers (sized in diagram units)
   const defs=el("defs",{});
-  const mk=el("marker",{id:"arr",viewBox:"0 0 10 10",refX:"9",refY:"5",markerWidth:"7",markerHeight:"7",orient:"auto-start-reverse"},defs);
-  el("path",{d:"M0,0 L10,5 L0,10 z",fill:"#a6ff00"},mk);
-
-  // region labels
-  [["Warp",180,28],["Time-Circuit",180,150],["Plex",180,505]].forEach(([t,x,y])=>{const tx=el("text",{x,y,"text-anchor":"middle",class:"rlabel"});tx.textContent=t;});
+  function marker(id,size){const m=el("marker",{id,viewBox:"0 0 10 10",refX:"7",refY:"5",markerWidth:size,markerHeight:size,orient:"auto-start-reverse",markerUnits:"userSpaceOnUse"},defs);el("path",{d:"M0,0 L10,5 L0,10 z",fill:"#a6ff00"},m);}
+  marker("arr",14); marker("arrBig",46); marker("arrMid",30);
 
   const gGate=el("g",{}), gCur=el("g",{}), gSyz=el("g",{}), gDemon=el("g",{}), gZones=el("g",{});
 
-  // shorten a line so it stops at circle edge
-  function edge(from,to,pad){const dx=to[0]-from[0],dy=to[1]-from[1],d=Math.hypot(dx,dy);return [to[0]-dx/d*pad,to[1]-dy/d*pad];}
-
-  // syzygies
-  [[3,6],[8,1],[7,2],[5,4],[9,0]].forEach(([a,b])=>{
+  // syzygies: twinned zones sit side by side
+  [[2,7],[5,4],[1,8],[9,0]].forEach(([a,b])=>{
     const p=POS[a],q=POS[b];
     el("line",{x1:p[0],y1:p[1],x2:q[0],y2:q[1],class:"syz"},gSyz);
   });
 
-  // currents
-  function mid(a,b){return [(POS[a][0]+POS[b][0])/2,(POS[a][1]+POS[b][1])/2];}
-  function curve(from,to,ctrl,g,cls,marker){
-    const end=edge(ctrl,to,R+3);
-    const p=el("path",{d:`M${from[0]},${from[1]} Q${ctrl[0]},${ctrl[1]} ${end[0]},${end[1]}`,class:cls},g);
-    if(marker)p.setAttribute("marker-end","url(#arr)");
-    return p;
-  }
-  const m81=mid(8,1), m72=mid(7,2), m54=mid(5,4);
-  curve(m81,POS[7],[125,245],gCur,"cur",true);
-  curve(m72,POS[5],[235,245],gCur,"cur",true);
-  curve(m54,POS[1],[180,410],gCur,"cur",true);
-  // Warp self-loop to 3 and Plex self-loop to 9
-  el("path",{d:"M180,80 C185,30 120,25 112,58",class:"cur","marker-end":"url(#arr)"},gCur);
-  el("path",{d:"M180,450 C185,500 120,505 112,472",class:"cur","marker-end":"url(#arr)"},gCur);
+  // currents: thick flows from each syzygy
+  [
+    "M817,440 C720,470 610,466 512,462",   // 7::2 -> 5
+    "M420,506 C470,565 530,640 578,693",   // 5::4 -> 1
+    "M628,792 C710,785 810,690 846,540",   // 8::1 -> 7
+    "M642,1092 C700,1078 698,1030 655,1018" // 9::0 -> 9 (Plex)
+  ].forEach(d=>el("path",{d,class:"cur","marker-end":"url(#arrBig)"},gCur));
+  el("path",{d:"M632,252 C640,205 595,200 598,232 C600,256 592,260 582,256",class:"cur warp","marker-end":"url(#arrMid)"},gCur); // 6::3 -> 3 (Warp)
 
-  // gates (non-self)
-  const gateBends={2:[150,190],3:[180,140],4:[200,380],5:[300,120],6:[180,20],7:[110,270],8:[40,400]};
-  for(let z=0;z<=9;z++){
-    const g=gate(z); if(g===z) continue;
-    const ctrl=gateBends[z]||[(POS[z][0]+POS[g][0])/2,(POS[z][1]+POS[g][1])/2];
-    curve(POS[z],POS[g],ctrl,gGate,"gate",false);
-  }
+  // gates: thin lines carrying their Gt-number
+  [
+    ["M432,422 C428,250 440,92 600,92 C690,92 712,135 696,188",15,692,118],
+    ["M550,195 C568,158 640,158 656,193",6,600,165],
+    ["M658,274 C640,332 560,332 547,278",21,598,327],
+    ["M746,395 C620,392 520,372 516,330 L516,280",3,520,327],
+    ["M594,699 C560,640 650,612 618,698",1,613,635],
+    ["M836,525 C790,620 722,672 640,714",28,692,672],
+    ["M386,590 C400,700 470,726 562,738",10,510,722],
+    ["M645,862 C702,890 712,952 652,988",36,697,918],
+    ["M566,1002 C510,1002 478,960 505,944 C530,932 558,948 578,962",45,512,961],
+    ["M564,1118 C468,1142 470,1064 564,1086",null,0,0,true]
+  ].forEach(([d,n,lx,ly,dash])=>{
+    el("path",{d,class:"gate"+(dash?" dash":""),"marker-end":"url(#arr)"},gGate);
+    if(n!==null){
+      const g=el("g",{class:"glabel"},gGate);
+      el("circle",{cx:lx,cy:ly,r:19},g);
+      const t=el("text",{x:lx,y:ly+1},g); t.textContent=n;
+    }
+  });
 
   // zones
   const zoneEls={};
