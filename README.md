@@ -35,7 +35,8 @@ then visit http://localhost:8000.
 1. Create a new repository on GitHub and upload these files (or `git push` them).
 2. Settings → Pages → Source: *Deploy from a branch* → `main` / root → Save.
 3. Your app is live at `https://<username>.github.io/<repo>/`.
-4. On a phone, open that link and choose **Add to Home Screen** to install it.
+4. **iPhone/iPad:** open the link in **Safari**, tap **Share**, then **Add to Home Screen**. It gets its own icon, opens full screen and works offline after the first visit.
+5. **Android:** open the link in Chrome and choose **Install app** (or **Add to Home screen**) from the menu.
 
 ## Windows app (.exe)
 
