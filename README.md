@@ -37,6 +37,20 @@ then visit http://localhost:8000.
 3. Your app is live at `https://<username>.github.io/<repo>/`.
 4. On a phone, open that link and choose **Add to Home Screen** to install it.
 
+## Windows app (.exe)
+
+The `desktop/` folder wraps the app in Electron. GitHub builds it for you:
+
+1. Push this repo to GitHub. The **Build Windows app** workflow runs automatically (Actions tab).
+2. When it finishes, open the run and download **Numogram-Windows**. It contains:
+   - `Numogram Setup 1.0.0.exe` – installer
+   - `Numogram-portable-1.0.0.exe` – runs without installing
+3. To publish a downloadable release, tag a version: `git tag v1.0.0 && git push --tags`. The .exe files are attached to the release on the Releases page.
+
+The .exe is unsigned, so Windows SmartScreen may warn on first launch: choose **More info → Run anyway**.
+
+To build on your own Windows PC instead: install Node.js 20, then in `desktop/` run `npm install` and `npm run dist`.
+
 ## Note
 
 The Numogram originates in the writings of the Cybernetic Culture Research Unit (CCRU). This is an independent fan-made tool; demons are labeled by zone pair and mesh number.

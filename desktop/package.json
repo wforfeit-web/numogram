@@ -1,0 +1,26 @@
+{
+  "name": "numogram",
+  "version": "1.0.0",
+  "description": "Interactive CCRU Numogram",
+  "main": "main.js",
+  "author": "numogram",
+  "license": "MIT",
+  "scripts": {
+    "prepare-app": "node -e \"const fs=require('fs');fs.rmSync('app',{recursive:true,force:true});fs.mkdirSync('app/icons',{recursive:true});for(const f of ['index.html','manifest.json','icons/icon.svg'])fs.copyFileSync('../'+f,'app/'+f)\"",
+    "start": "npm run prepare-app && electron .",
+    "dist": "npm run prepare-app && electron-builder --win --publish never"
+  },
+  "devDependencies": {
+    "electron": "31.7.7",
+    "electron-builder": "24.13.3"
+  },
+  "build": {
+    "appId": "io.numogram.app",
+    "productName": "Numogram",
+    "files": ["main.js", "app/**"],
+    "directories": { "output": "dist" },
+    "win": { "target": ["nsis", "portable"] },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true },
+    "portable": { "artifactName": "Numogram-portable-${version}.exe" }
+  }
+}
